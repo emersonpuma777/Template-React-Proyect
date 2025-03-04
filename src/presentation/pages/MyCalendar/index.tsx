@@ -24,7 +24,9 @@ const MyCalendar = () => {
   }, []);
 
   return (
-    <div id="calendar" className="flex flex-col p-4 pt-0 w-full h-full"></div>
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div id="calendar" className="flex flex-col w-full h-full" />
+    </div>
   );
 };
 

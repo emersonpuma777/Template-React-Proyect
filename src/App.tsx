@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/layouts/ProtectedRoute";
-import Dashboard from "./components/layouts/Dashboard";
 import Login from "./presentation/pages/Auth/Login";
 import SignUp from "./presentation/pages/Auth/SignUp";
 import Template from "@components/layouts/Template";
@@ -9,6 +8,10 @@ import { RootState } from "@application/store/store";
 import { useEffect, useState } from "react";
 import { login } from "@application/slices/authSlice";
 import MyCalendar from "@presentation/pages/MyCalendar";
+import Doctor from "@presentation/pages/Doctor";
+import Appointment from "@presentation/pages/Appointment";
+import Patient from "@presentation/pages/Patient";
+import { Toaster } from "@components/ui/sonner";
 
 function App() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -35,29 +38,26 @@ function App() {
 
   return (
     <>
+      <Toaster />
       <Template>
         <Routes>
           <Route
             path="/login"
-            element={user ? <Navigate to="/dashboard" /> : <Login />}
+            element={user ? <Navigate to="/calendar" /> : <Login />}
           />
           <Route
             path="/signup"
-            element={user ? <Navigate to="/dashboard" /> : <SignUp />}
+            element={user ? <Navigate to="/calendar" /> : <SignUp />}
           />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard>
-                  <MyCalendar />
-                </Dashboard>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<ProtectedRoute />}>
+            <Route path="/calendar" element={<MyCalendar />} />
+            <Route path="/patients" element={<Patient />} />
+            <Route path="/doctors" element={<Doctor />} />
+            <Route path="/appointment" element={<Appointment />} />
+          </Route>
           <Route
             path="*"
-            element={<Navigate to={user ? "/dashboard" : "/login"} replace />}
+            element={<Navigate to={user ? "/calendar" : "/login"} replace />}
           />
         </Routes>
       </Template>

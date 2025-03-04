@@ -182,7 +182,7 @@ const SignUpForm = ({ className, ...props }: ComponentProps<"div">) => {
                 />
 
                 {loading ? (
-                  <div className="bg-[#014177] flex items-center justify-center w-full h-full h-[36px] inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm px-4 py-2">
+                  <div className="bg-[#0f2135] flex items-center justify-center w-full h-full h-[36px] inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm px-4 py-2">
                     <ClipLoader color="#fff" loading={true} size={25} />
                   </div>
                 ) : (

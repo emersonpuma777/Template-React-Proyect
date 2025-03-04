@@ -9,6 +9,7 @@ export interface UserState {
   name?: string | null;
   password?: string | null;
   username?: string | null;
+  role?: string | null;
 }
 
 interface AuthState {

@@ -6,8 +6,6 @@ import {
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
 
 function handleRequest(req: InternalAxiosRequestConfig) {
-  console.log(req.url);
-
   req.headers = req.headers || {};
   if (req.url?.startsWith("/sign-in") || req.url?.startsWith("/signup")) {
     return req;

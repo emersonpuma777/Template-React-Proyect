@@ -1,5 +1,4 @@
 import { object, z } from "zod";
-import createModelFactory from "@utils/createModelFactory";
 
 const signUp = z.object({
   data: z
@@ -20,6 +19,5 @@ const signUp = z.object({
 });
 
 export type SignUp = z.infer<typeof signUp>;
-export const createSignUp = createModelFactory(signUp);
 
 export default signUp;

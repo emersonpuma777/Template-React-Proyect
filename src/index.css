@@ -15,12 +15,12 @@
 
 :root {
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: oklch(24.41% 0.0444 251.4);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(24.41% 0.0444 251.4);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(37.2% 0.1086 251.4);
+  --popover-foreground: oklch(24.41% 0.0444 251.4);
+  --primary: oklch(24.41% 0.0444 251.4);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -39,12 +39,13 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar: oklch(38.14% 0.0994 254.48);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(24.41% 0.0444 251.4);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-accent-hover: oklch(24.41% 0.0444 251.4);
+  --sidebar-accent: oklch(68.06% 0.173 137.64);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 }
@@ -82,6 +83,7 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  --data-grid-select: oklch(38.14% 0.0994 254.48 / 41.57%);
 }
 
 @theme inline {
@@ -121,6 +123,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-accent-hover: var(--sidebar-accent-hover);
 }
 
 @layer base {
@@ -140,4 +143,36 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+.tui-full-calendar-month-week-item
+  .tui-full-calendar-today
+  .tui-full-calendar-weekday-grid-date-decorator {
+  background-color: var(--foreground) !important;
+}
+
+.MuiDataGrid-columnHeader:focus,
+.MuiDataGrid-cell:focus {
+  outline: none !important;
+}
+
+.MuiDataGrid-columnHeader:focus-within,
+.MuiDataGrid-cell:focus-within {
+  outline: none !important;
+}
+
+.css-imrjgg-MuiButtonBase-root-MuiCheckbox-root.Mui-checked,
+.css-imrjgg-MuiButtonBase-root-MuiCheckbox-root.MuiCheckbox-indeterminate {
+  color: var(--sidebar) !important;
+}
+
+.MuiDataGrid-row.Mui-selected {
+  background-color: rgba(23, 67, 118, 0.145) !important;
+}
+.MuiDataGrid-row:hover {
+  background-color: rgba(23, 67, 118, 0.145) !important;
+}
+
+.MuiDataGrid-row.MuiDataGrid-row {
+  cursor: pointer;
 }

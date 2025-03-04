@@ -5,7 +5,7 @@ type TemplateProps = {
 };
 
 const Template = ({ children }: TemplateProps) => (
-  <div className="h-full w-full overflow-hidden">{children}</div>
+  <div className="flex h-full w-full overflow-hidden">{children}</div>
 );
 
 export default Template;

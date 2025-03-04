@@ -10,12 +10,12 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard", { replace: true });
+      navigate("/calendar", { replace: true });
     }
   }, [user, navigate]);
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10 w-full">
       <div className="w-[800px]">
         <LoginForm />
       </div>
