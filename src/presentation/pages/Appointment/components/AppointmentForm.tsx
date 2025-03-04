@@ -1,7 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import DatePickerField from "@components/fields/DatePickerField";
 import EmailField from "@components/fields/EmailField";
 import InputField from "@components/fields/InputField";
-import PasswordField from "@components/fields/PasswordField";
 import PhoneField from "@components/fields/PhoneField";
 import SelectField from "@components/fields/SelectField";
 import { Form } from "@components/ui/form";
@@ -12,63 +12,89 @@ import { DialogFooter as ModalFooter } from "@components/ui/dialog";
 import { Plus, Save, Trash, X } from "lucide-react";
 import { useRequest } from "ahooks";
 import { toast } from "sonner";
-import PatientController from "@infrastructure/controllers/PatientController";
+import AppointmentController from "@infrastructure/controllers/AppointmentController";
 import ClipLoader from "react-spinners/ClipLoader";
-import { PatientParser } from "@infrastructure/models/patient";
+import { AppointmentParser } from "@infrastructure/models/appointement";
 import {
-  PatientSchemaCreate,
-  patientSchemaCreate,
-} from "@infrastructure/schema/patientSchemaCreate";
-import {
-  PatientSchemaUpdate,
-  patientSchemaUpdate,
-} from "@infrastructure/schema/patientSchemaUpdate";
+  AppointmentSchemaCreate,
+  appointmentSchemaCreate,
+} from "@infrastructure/schema/appointmentSchemaCreate";
+import { appointmentSchemaUpdate } from "@infrastructure/schema/appointmentSchemaUpdate";
+import PatientController from "@infrastructure/controllers/PatientController";
+import DoctorController from "@infrastructure/controllers/DoctorController";
+import WorkingHours from "@infrastructure/controllers/WorkingHours";
+import { useEffect } from "react";
+import { format } from "date-fns";
 
-interface PatientFormProps {
-  current?: PatientParser | null;
+interface AppointmentFormProps {
+  current?: AppointmentParser | null;
   onClose: (e: boolean) => void;
   onRefresh: () => void;
 }
 
-const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
+const AppointmentForm = ({
+  current,
+  onClose,
+  onRefresh,
+}: AppointmentFormProps) => {
   const form = useForm({
-    resolver: zodResolver(current ? patientSchemaUpdate : patientSchemaCreate),
+    resolver: zodResolver(
+      current ? appointmentSchemaUpdate : appointmentSchemaCreate
+    ),
     mode: "onBlur",
     defaultValues: current
       ? {
-          name: current.name ?? "",
-          lastname: current.lastname ?? "",
-          email: current.email ?? "",
-          phone: current.phone ?? "",
-          address: current.address ?? "",
-          dob: current.dob ?? new Date(),
-          social_security_number: current.social_security_number ?? "",
-          sex: current.gender ?? "",
+          patientId: current?.patient_id ?? "",
+          doctorId: current?.doctor_id ?? "",
+          appointmentDate: current?.appointmentDate,
+          startTime: current?.start_time,
+          endTime: current?.end_time,
         }
       : {
-          name: "",
-          lastname: "",
-          dob: new Date(2000, 7, 2),
-          sex: "",
-          address: "",
-          phone: "",
-          email: "",
-          social_security_number: "",
-          identifier: "",
-          username: "",
-          password: "",
-          city: "",
-          country: "",
+          patientId: "",
+          doctorId: "",
+          appointmentDate: "",
+          startTime: "",
+          endTime: "",
         },
   });
 
-  const { run: runCreatePatient, loading: loadingCreate } = useRequest(
-    (data) => PatientController.create(data),
+  const { data: workingHours = [], run: runWorkingHours } = useRequest(
+    async (params) => {
+      const res = await WorkingHours.search(params);
+      return (res.data ?? []).map((item) => ({
+        label: item,
+        value: item,
+      }));
+    },
+    {
+      manual: true,
+    }
+  );
+
+  const { data: patient } = useRequest(async () => {
+    const res = await PatientController.search();
+    return (res.data ?? []).map((item) => ({
+      label: `${item.name} ${item.lastname}`,
+      value: item.id,
+    }));
+  }, {});
+
+  const { data: doctor } = useRequest(async () => {
+    const res = await DoctorController.search();
+    return (res.data ?? []).map((item) => ({
+      label: `${item.specialty_name} - ${item.name} ${item.lastname}`,
+      value: item.id,
+    }));
+  }, {});
+
+  const { run: runCreateAppointment, loading: loadingCreate } = useRequest(
+    (data) => AppointmentController.create(data),
     {
       manual: true,
       onSuccess: () => {
-        toast(`${current ? "Updated" : "Created"} patient`, {
-          description: "Successfully created the patient",
+        toast(`${current ? "Updated" : "Created"} appointment`, {
+          description: "Successfully created the appointment",
           action: {
             label: "Undo",
             onClick: () => console.log("Undo"),
@@ -78,8 +104,9 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
         onClose(false);
       },
       onError: () => {
-        toast(`${current ? "Updated" : "Created"} patient`, {
-          description: "An error occurred while trying to create the patient",
+        toast(`${current ? "Updated" : "Created"} appointment`, {
+          description:
+            "An error occurred while trying to create the appointment",
           action: {
             label: "Undo",
             onClick: () => console.log("Undo"),
@@ -89,13 +116,13 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
     }
   );
 
-  const { run: runUpdatePatient, loading: loadingUpdate } = useRequest(
-    (data) => PatientController.update(current?.id ?? "", data),
+  const { run: runUpdateAppointment, loading: loadingUpdate } = useRequest(
+    (data) => AppointmentController.update(current?.id ?? "", data),
     {
       manual: true,
       onSuccess: () => {
-        toast(`${current ? "Updated" : "Created"} patient`, {
-          description: "Successfully created the patient",
+        toast(`${current ? "Updated" : "Created"} appointment`, {
+          description: "Successfully created the appointment",
           action: {
             label: "Undo",
             onClick: () => console.log("Undo"),
@@ -105,8 +132,9 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
         onClose(false);
       },
       onError: () => {
-        toast(`${current ? "Updated" : "Created"} patient`, {
-          description: "An error occurred while trying to update the patient",
+        toast(`${current ? "Updated" : "Created"} appointment`, {
+          description:
+            "An error occurred while trying to update the appointment",
           action: {
             label: "Undo",
             onClick: () => console.log("Undo"),
@@ -116,13 +144,13 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
     }
   );
 
-  const { run: runRemovePatient, loading: loadingRemove } = useRequest(
-    () => PatientController.remove(current?.id ?? ""),
+  const { run: runRemoveAppointment, loading: loadingRemove } = useRequest(
+    () => AppointmentController.remove(current?.id ?? ""),
     {
       manual: true,
       onSuccess: () => {
-        toast(`Deleted patient`, {
-          description: "Successfully deleted the patient",
+        toast(`Deleted appointment`, {
+          description: "Successfully deleted the appointment",
           action: {
             label: "Undo",
             onClick: () => console.log("Undo"),
@@ -132,8 +160,9 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
         onClose(false);
       },
       onError: () => {
-        toast(`Deleted patient`, {
-          description: "An error occurred while trying to delete the patient",
+        toast(`Deleted appointment`, {
+          description:
+            "An error occurred while trying to delete the appointment",
           action: {
             label: "Undo",
             onClick: () => console.log("Undo"),
@@ -143,21 +172,28 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
     }
   );
 
-  const onSubmit = (data: PatientSchemaCreate | PatientSchemaUpdate) => {
+  const onSubmit = (
+    data: AppointmentSchemaCreate | AppointmentSchemaCreate
+  ) => {
     if (current) {
-      runUpdatePatient({
-        ...data,
-        gender: data?.sex,
-      });
+      runUpdateAppointment(data);
     } else {
-      runCreatePatient({
-        ...data,
-        tyc: true,
-        user_id: null,
-        gender: data?.sex,
-      });
+      runCreateAppointment(data);
     }
   };
+
+  useEffect(() => {
+    console.log("asd");
+
+    const date = form.watch("appointmentDate");
+    const docId = form.watch("doctorId");
+    if (date && docId) {
+      runWorkingHours({
+        doctorId: docId,
+        date: format(date, "yyyy-MM-dd"),
+      });
+    }
+  }, [form.watch("appointmentDate"), form.watch("doctorId")]);
 
   return (
     <Form {...form}>
@@ -217,75 +253,35 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
           </div>
         ) : (
           <div className="flex flex-col gap-3 pb-5">
-            <div className="flex gap-3 grid grid-cols-2">
-              <InputField
-                control={form.control}
-                name="name"
-                label="First Name"
-              />
-              <InputField
-                control={form.control}
-                name="lastname"
-                label="Last Name"
-              />
-            </div>
-            <div className="flex gap-3 grid grid-cols-2">
-              <InputField
-                control={form.control}
-                name="identifier"
-                label="DNI"
-              />
-              <EmailField control={form.control} name="email" label="Email" />
-            </div>
-            <div className="flex gap-3 grid grid-cols-2">
-              <InputField
-                control={form.control}
-                name="username"
-                label="Username"
-              />
-              <PasswordField
-                control={form.control}
-                name="password"
-                label="Password"
-              />
-            </div>
-            <InputField control={form.control} name="address" label="Address" />
-            <div className="flex gap-3 grid grid-cols-2">
-              <DatePickerField
-                control={form.control}
-                name="dob"
-                label="Birthday"
-              />
-              <InputField
-                control={form.control}
-                name="social_security_number"
-                label="Social Security Number"
-              />
-            </div>
+            <SelectField
+              control={form.control}
+              name="patientId"
+              label="Patient"
+              data={patient ?? []}
+            />
+            <SelectField
+              control={form.control}
+              name="doctorId"
+              label="Doctor"
+              data={doctor ?? []}
+            />
+            <DatePickerField
+              control={form.control}
+              name="appointmentDate"
+              label="Appointment Date"
+            />
             <div className="flex gap-3 grid grid-cols-2">
               <SelectField
                 control={form.control}
-                name="sex"
-                label="Gender"
-                data={[
-                  {
-                    label: "Male",
-                    value: "M",
-                  },
-                  {
-                    label: "Female",
-                    value: "F",
-                  },
-                ]}
+                name="startTime"
+                label="Start time"
+                data={workingHours ?? []}
               />
-              <PhoneField control={form.control} name="phone" label="Phone" />
-            </div>
-            <div className="flex gap-3 grid grid-cols-2">
-              <InputField control={form.control} name="city" label="City" />
-              <InputField
+              <SelectField
                 control={form.control}
-                name="country"
-                label="Country"
+                name="endTime"
+                label="End time"
+                data={workingHours ?? []}
               />
             </div>
           </div>
@@ -301,7 +297,7 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
             ) : (
               <>
                 {current ? <Save /> : <Plus />}
-                {current ? "Save Changes" : "Create Patient"}
+                {current ? "Save Changes" : "Create Appointment"}
               </>
             )}
           </Button>
@@ -310,7 +306,7 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
               type="button"
               className="cursor-pointer"
               variant="destructive"
-              onClick={() => runRemovePatient()}
+              onClick={() => runRemoveAppointment()}
               disabled={loadingCreate || loadingUpdate || loadingRemove}
             >
               <Trash />
@@ -335,4 +331,4 @@ const PatientForm = ({ current, onClose, onRefresh }: PatientFormProps) => {
   );
 };
 
-export default PatientForm;
+export default AppointmentForm;

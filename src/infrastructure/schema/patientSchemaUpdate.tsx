@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
 
 export const patientSchemaUpdate = z.object({
@@ -18,7 +19,22 @@ export const patientSchemaUpdate = z.object({
     .min(9, { message: "Phone number must be at least 9 digits long" })
     .regex(/^\d+$/, { message: "Phone number must contain only digits" })
     .nonempty("Phone number is required"),
-  specialty_id: z.string().nonempty("Specialty must be select"),
+  dob: z.preprocess(
+    (val: any) =>
+      typeof val === "string" && val.trim() === "" ? undefined : new Date(val),
+    z.date({ required_error: "Date of birth is required" }).nullable()
+  ),
+  sex: z.string().nonempty("Gender must be select"),
+  address: z
+    .string()
+    .min(2, { message: "Address must be at least 2 characters long" })
+    .nonempty("City is required"),
+  social_security_number: z.string().nonempty("Identifier is required"),
+  identifier: z.string().optional(),
+  username: z.string().optional(),
+  password: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
 });
 
 export type PatientSchemaUpdate = z.infer<typeof patientSchemaUpdate>;

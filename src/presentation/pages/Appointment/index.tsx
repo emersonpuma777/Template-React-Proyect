@@ -1,56 +1,83 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRequest } from "ahooks";
-import { Plus, Trash } from "lucide-react";
+import { Check, Plus, Trash, X } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { useRef, useState } from "react";
-import { Modal } from "@components/misc/Modal";
 import AppointmentController from "@infrastructure/controllers/AppointmentController";
+import ModalAddEdit from "./components/ModalAddEdit";
+import { format } from "date-fns";
+import { AppointmentParser } from "@infrastructure/models/appointement";
 
 const Appointment = () => {
   const gridRef = useRef<any>(null);
+  const patientCurrent = useRef<AppointmentParser | null>(null);
+
   const [appointmentSelected, setAppointmentSelected] =
     useState<GridRowSelectionModel>([]);
   const [showModal, setShowModal] = useState(false);
 
-  const { data: appointment, loading } = useRequest(
-    () => AppointmentController.search(),
-    {}
-  );
+  const {
+    data: appointment,
+    loading,
+    refresh,
+  } = useRequest(() => AppointmentController.search(), {});
+
   const columns: GridColDef<any>[] = [
     {
-      field: "name",
-      headerName: "First name",
+      field: "patient_fullname",
+      headerName: "Patient",
+      width: 250,
+      cellClassName: "!text-center",
+    },
+    {
+      field: "doctor_fullname",
+      headerName: "Doctor",
+      width: 250,
+      cellClassName: "!text-center",
+    },
+    {
+      field: "appointment_date",
+      headerName: "Fecha",
+      valueFormatter: (value) => format(new Date(value), "dd-MM-yyyy"),
       width: 150,
       cellClassName: "!text-center",
     },
     {
-      field: "lastname",
-      headerName: "Last name",
+      field: "start_time",
+      headerName: "Start time",
       width: 150,
       cellClassName: "!text-center",
     },
     {
-      field: "phone",
-      headerName: "Phone",
-      valueFormatter: (value) => `+51 ${value}`,
+      field: "end_time",
+      headerName: "End time",
       width: 150,
+      cellClassName: "!text-center",
     },
     {
-      field: "email",
-      headerName: "Email",
-      width: 250,
-    },
-    {
-      field: "specialty_name",
-      headerName: "Specialty",
-      width: 250,
-    },
-    {
-      field: "hourly_rate",
-      headerName: "Price per hour",
+      field: "appointment_price",
+      headerName: "Appointment Price",
+      width: 150,
       valueFormatter: (value) => `S/. ${value}`,
-      width: 250,
+      cellClassName: "!text-center",
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 150,
+      cellClassName: "!text-center",
+    },
+    {
+      field: "is_paid",
+      headerName: "Is paid",
+      renderCell: (data) => {
+        return (
+          <div className="flex justify-center items-center w-full h-full">
+            {data?.value ? <Check /> : <X />}
+          </div>
+        );
+      },
     },
   ];
 
@@ -86,14 +113,23 @@ const Appointment = () => {
             onRowSelectionModelChange={(row) => {
               setAppointmentSelected(row);
             }}
+            onRowClick={(e) => {
+              patientCurrent.current = e.row as AppointmentParser;
+              setShowModal(true);
+            }}
           />
         </div>
       </div>
       {showModal && (
-        <Modal
+        <ModalAddEdit
           onClose={(e) => {
             setShowModal(e);
+            patientCurrent.current = null;
           }}
+          onRefresh={() => {
+            refresh();
+          }}
+          current={patientCurrent.current}
         />
       )}
     </div>

@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { Plus, Trash } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { useRef, useState } from "react";
-import { Modal } from "@components/misc/Modal";
 import { PatientParser } from "@infrastructure/models/patient";
 import ModalAddEdit from "./components/ModalAddEdit";
 
