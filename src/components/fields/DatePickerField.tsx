@@ -25,6 +25,7 @@ interface DatePickerFieldProps {
   classNameInput?: string;
   className?: string;
   control: Control<any>;
+  disabled?: boolean;
 }
 
 const DatePickerField = ({
@@ -33,6 +34,7 @@ const DatePickerField = ({
   control,
   classNameInput = "",
   className = "",
+  disabled = false,
 }: DatePickerFieldProps) => {
   return (
     <FormField
@@ -43,7 +45,11 @@ const DatePickerField = ({
           {label && <FormLabel>{label}</FormLabel>}
           <div>
             <Popover>
-              <PopoverTrigger asChild className={classNameInput}>
+              <PopoverTrigger
+                asChild
+                className={classNameInput}
+                disabled={disabled}
+              >
                 <div>
                   <FormControl>
                     <Button

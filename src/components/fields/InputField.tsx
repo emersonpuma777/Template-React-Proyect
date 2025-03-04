@@ -15,6 +15,7 @@ interface InputFieldProps {
   classNameInput?: string;
   className?: string;
   control: Control<any>;
+  disabled?: boolean;
 }
 
 const InputField = ({
@@ -23,6 +24,7 @@ const InputField = ({
   control,
   classNameInput = "",
   className = "",
+  disabled = false,
 }: InputFieldProps) => {
   return (
     <FormField
@@ -38,6 +40,7 @@ const InputField = ({
                 type="text"
                 className={classNameInput}
                 ref={field.ref}
+                disabled={disabled}
               />
             </FormControl>
             <FormMessage className="text-[12px]" />

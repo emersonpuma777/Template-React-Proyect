@@ -22,6 +22,7 @@ interface SelectFieldProps {
   className?: string;
   control: Control<any>;
   data?: { value: string; label: string }[];
+  disabled?: boolean;
 }
 
 const SelectField = ({
@@ -31,6 +32,7 @@ const SelectField = ({
   classNameInput = "",
   className = "",
   data = [],
+  disabled = false,
 }: SelectFieldProps) => {
   return (
     <FormField
@@ -40,7 +42,11 @@ const SelectField = ({
         <FormItem className={className}>
           {label && <FormLabel>{label}</FormLabel>}
           <div>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+              disabled={disabled}
+            >
               <FormControl>
                 <SelectTrigger className={`w-full ${classNameInput}`}>
                   <SelectValue />

@@ -46,8 +46,11 @@ const AppointmentForm = ({
       ? {
           patientId: current?.patient_id ?? "",
           doctorId: current?.doctor_id ?? "",
-          appointmentDate: current?.appointmentDate,
-          startTime: current?.start_time,
+          appointmentDate: current?.appointment_date,
+          startTime: current?.start_time?.substring(
+            0,
+            current?.start_time?.length - 3
+          ),
           endTime: current?.end_time,
         }
       : {
@@ -145,7 +148,7 @@ const AppointmentForm = ({
   );
 
   const { run: runRemoveAppointment, loading: loadingRemove } = useRequest(
-    () => AppointmentController.remove(current?.id ?? ""),
+    () => AppointmentController.cancel(current?.id ?? ""),
     {
       manual: true,
       onSuccess: () => {
@@ -183,8 +186,6 @@ const AppointmentForm = ({
   };
 
   useEffect(() => {
-    console.log("asd");
-
     const date = form.watch("appointmentDate");
     const docId = form.watch("doctorId");
     if (date && docId) {
@@ -198,109 +199,61 @@ const AppointmentForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        {current ? (
-          <div className="flex flex-col gap-3 pb-5">
-            <div className="flex gap-3 grid grid-cols-2">
-              <InputField
-                control={form.control}
-                name="name"
-                label="First Name"
-              />
-              <InputField
-                control={form.control}
-                name="lastname"
-                label="Last Name"
-              />
-            </div>
-            <div className="flex gap-3 grid grid-cols-2">
-              <DatePickerField
-                control={form.control}
-                name="dob"
-                label="Birthday"
-              />
-              <SelectField
-                control={form.control}
-                name="sex"
-                label="Gender"
-                data={[
-                  {
-                    label: "Male",
-                    value: "M",
-                  },
-                  {
-                    label: "Female",
-                    value: "F",
-                  },
-                ]}
-              />
-            </div>
-            <div className="flex gap-3 grid grid-cols-2">
-              <InputField
-                control={form.control}
-                name="address"
-                label="Address"
-              />
-              <EmailField control={form.control} name="email" label="Email" />
-            </div>
-            <div className="flex gap-3 grid grid-cols-2">
-              <PhoneField control={form.control} name="phone" label="Phone" />
-              <InputField
-                control={form.control}
-                name="social_security_number"
-                label="Social Security Number"
-              />
-            </div>
+        <div className="flex flex-col gap-3 pb-5">
+          <SelectField
+            control={form.control}
+            name="patientId"
+            label="Patient"
+            data={patient ?? []}
+            disabled={Boolean(current)}
+          />
+          <SelectField
+            control={form.control}
+            name="doctorId"
+            label="Doctor"
+            data={doctor ?? []}
+            disabled={Boolean(current)}
+          />
+          <DatePickerField
+            control={form.control}
+            name="appointmentDate"
+            label="Appointment Date"
+            disabled={Boolean(current)}
+          />
+          <div className="flex gap-3 grid grid-cols-2">
+            <InputField
+              control={form.control}
+              name="startTime"
+              label="Start time"
+              disabled={Boolean(current)}
+            />
+            <InputField
+              control={form.control}
+              name="endTime"
+              label="End time"
+              data={workingHours ?? []}
+              disabled={Boolean(current)}
+            />
           </div>
-        ) : (
-          <div className="flex flex-col gap-3 pb-5">
-            <SelectField
-              control={form.control}
-              name="patientId"
-              label="Patient"
-              data={patient ?? []}
-            />
-            <SelectField
-              control={form.control}
-              name="doctorId"
-              label="Doctor"
-              data={doctor ?? []}
-            />
-            <DatePickerField
-              control={form.control}
-              name="appointmentDate"
-              label="Appointment Date"
-            />
-            <div className="flex gap-3 grid grid-cols-2">
-              <SelectField
-                control={form.control}
-                name="startTime"
-                label="Start time"
-                data={workingHours ?? []}
-              />
-              <SelectField
-                control={form.control}
-                name="endTime"
-                label="End time"
-                data={workingHours ?? []}
-              />
-            </div>
-          </div>
-        )}
+        </div>
+
         <ModalFooter>
-          <Button
-            type="submit"
-            className="cursor-pointer"
-            disabled={loadingCreate || loadingUpdate || loadingRemove}
-          >
-            {loadingCreate || loadingUpdate || loadingRemove ? (
-              <ClipLoader size={15} color="#fff" />
-            ) : (
-              <>
-                {current ? <Save /> : <Plus />}
-                {current ? "Save Changes" : "Create Appointment"}
-              </>
-            )}
-          </Button>
+          {!current && (
+            <Button
+              type="submit"
+              className="cursor-pointer"
+              disabled={loadingCreate || loadingUpdate || loadingRemove}
+            >
+              {loadingCreate || loadingUpdate || loadingRemove ? (
+                <ClipLoader size={15} color="#fff" />
+              ) : (
+                <>
+                  {current ? <Save /> : <Plus />}
+                  {current ? "Save Changes" : "Create Appointment"}
+                </>
+              )}
+            </Button>
+          )}
           {current && (
             <Button
               type="button"
@@ -310,7 +263,7 @@ const AppointmentForm = ({
               disabled={loadingCreate || loadingUpdate || loadingRemove}
             >
               <Trash />
-              Delete
+              Cancel Appointment
             </Button>
           )}
           <div className="grow" />
