@@ -109,7 +109,9 @@ const Appointment = () => {
             filterMode="client"
             onRowClick={(e) => {
               patientCurrent.current = e.row as AppointmentParser;
-              setShowModal(true);
+              if (user?.role !== "doctor") {
+                setShowModal(true);
+              }
             }}
           />
         </div>
