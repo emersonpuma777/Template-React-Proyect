@@ -23,6 +23,7 @@ import { useEffect } from "react";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
 import { RootState } from "@application/store/store";
+import PaymentController from "@infrastructure/controllers/PaymentController";
 
 interface AppointmentFormProps {
   current?: AppointmentParser | null;
@@ -185,6 +186,34 @@ const AppointmentForm = ({
     }
   );
 
+  const { run: runPayAppointment, loading: loadingApointment } = useRequest(
+    (data) => PaymentController.pay(data),
+    {
+      manual: true,
+      onSuccess: () => {
+        toast(`Pay appointment`, {
+          description: "Successfully pay the appointment",
+          action: {
+            label: "Undo",
+            onClick: () => console.log("Undo"),
+          },
+        });
+        onRefresh();
+        onClose(false);
+      },
+      onError: () => {
+        toast(`Pay appointment`, {
+          description:
+            "An error occurred while trying to update the appointment",
+          action: {
+            label: "Undo",
+            onClick: () => console.log("Undo"),
+          },
+        });
+      },
+    }
+  );
+
   const onSubmit = (data: any) => {
     if (current) {
       runUpdateAppointment(data);
@@ -288,9 +317,17 @@ const AppointmentForm = ({
                 <Button
                   type="submit"
                   className="cursor-pointer"
-                  disabled={loadingCreate || loadingUpdate || loadingRemove}
+                  disabled={
+                    loadingCreate ||
+                    loadingUpdate ||
+                    loadingRemove ||
+                    loadingApointment
+                  }
                 >
-                  {loadingCreate || loadingUpdate || loadingRemove ? (
+                  {loadingCreate ||
+                  loadingUpdate ||
+                  loadingRemove ||
+                  loadingApointment ? (
                     <ClipLoader size={15} color="#fff" />
                   ) : (
                     <>
@@ -306,7 +343,12 @@ const AppointmentForm = ({
                   className="cursor-pointer"
                   variant="destructive"
                   onClick={() => runRemoveAppointment()}
-                  disabled={loadingCreate || loadingUpdate || loadingRemove}
+                  disabled={
+                    loadingCreate ||
+                    loadingUpdate ||
+                    loadingRemove ||
+                    loadingApointment
+                  }
                 >
                   <Trash />
                   Cancel Appointment
@@ -317,11 +359,28 @@ const AppointmentForm = ({
                   type="button"
                   className="cursor-pointer"
                   variant="outline"
-                  onClick={() => runRemoveAppointment()}
-                  disabled={loadingCreate || loadingUpdate || loadingRemove}
+                  onClick={() => {
+                    runPayAppointment({
+                      appointment_id: current.id,
+                      amount: current.appointment_price,
+                      payment_method: "cash",
+                    });
+                  }}
+                  disabled={
+                    loadingCreate ||
+                    loadingUpdate ||
+                    loadingRemove ||
+                    loadingApointment
+                  }
                 >
-                  <DollarSign />
-                  Paid Appointment
+                  {loadingApointment ? (
+                    <ClipLoader size={15} color="#000" />
+                  ) : (
+                    <>
+                      <DollarSign />
+                      Paid Appointment
+                    </>
+                  )}
                 </Button>
               )}
               <div className="grow" />
@@ -331,7 +390,12 @@ const AppointmentForm = ({
                 className="cursor-pointer"
                 variant="secondary"
                 onClick={() => onClose(false)}
-                disabled={loadingCreate || loadingUpdate || loadingRemove}
+                disabled={
+                  loadingCreate ||
+                  loadingUpdate ||
+                  loadingRemove ||
+                  loadingApointment
+                }
               >
                 <X />
                 Cancel

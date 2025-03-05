@@ -8,12 +8,16 @@ import AppointmentController from "@infrastructure/controllers/AppointmentContro
 import ModalAddEdit from "./components/ModalAddEdit";
 import { format } from "date-fns";
 import { AppointmentParser } from "@infrastructure/models/appointement";
+import { useSelector } from "react-redux";
+import { RootState } from "@application/store/store";
 
 const Appointment = () => {
   const gridRef = useRef<any>(null);
   const patientCurrent = useRef<AppointmentParser | null>(null);
 
   const [showModal, setShowModal] = useState(false);
+
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const {
     data: appointment,
@@ -82,14 +86,16 @@ const Appointment = () => {
   return (
     <div className="flex flex-col gap-4 p-4 pt-0 h-full w-full">
       <div className="flex flex-col gap-4 w-full h-full">
-        <div className="flex gap-2">
-          <Button
-            className="w-10 cursor-pointer"
-            onClick={() => setShowModal(true)}
-          >
-            <Plus />
-          </Button>
-        </div>
+        {user?.role !== "doctor" && (
+          <div className="flex gap-2">
+            <Button
+              className="w-10 cursor-pointer"
+              onClick={() => setShowModal(true)}
+            >
+              <Plus />
+            </Button>
+          </div>
+        )}
         <div className="flex flex-col h-full w-full">
           <DataGrid
             ref={gridRef}

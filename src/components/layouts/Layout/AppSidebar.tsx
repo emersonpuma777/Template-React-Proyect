@@ -72,6 +72,23 @@ const dataPatient = {
   ],
 };
 
+const dataDoctor = {
+  navMain: [
+    {
+      title: "Calendar",
+      url: "/calendar",
+      icon: Calendar,
+      items: [],
+    },
+    {
+      title: "Appointment",
+      url: "/appointment",
+      icon: Frame,
+      items: [],
+    },
+  ],
+};
+
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { user } = useSelector((state: RootState) => state.auth);
   return (
@@ -81,7 +98,13 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain
-          items={user?.role === "admin" ? data.navMain : dataPatient.navMain}
+          items={
+            user?.role === "admin"
+              ? data.navMain
+              : user?.role === "doctor"
+              ? dataDoctor.navMain
+              : dataPatient.navMain
+          }
         />
       </SidebarContent>
       <SidebarFooter>

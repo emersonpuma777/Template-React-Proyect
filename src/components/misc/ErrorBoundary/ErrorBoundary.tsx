@@ -34,7 +34,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 }
 
 const mapStateToProps = (state: RootState) => ({
-  userInfo: state.user,
+  userInfo: state?.auth.user ?? {},
 });
 
 export default connect(mapStateToProps)(ErrorBoundary);
