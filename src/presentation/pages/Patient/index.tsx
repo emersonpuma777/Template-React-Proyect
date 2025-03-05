@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import PatientController from "@infrastructure/controllers/PatientController";
 import { useRequest } from "ahooks";
 import { format } from "date-fns";
-import { Plus, Trash } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { useRef, useState } from "react";
 import { PatientParser } from "@infrastructure/models/patient";
@@ -13,9 +13,6 @@ const Patient = () => {
   const gridRef = useRef<any>(null);
   const patientCurrent = useRef<PatientParser | null>(null);
 
-  const [patientSelected, setPatientSelected] = useState<GridRowSelectionModel>(
-    []
-  );
   const [showModal, setShowModal] = useState(false);
 
   const {
@@ -79,13 +76,6 @@ const Patient = () => {
           >
             <Plus />
           </Button>
-          <Button
-            className="w-10 cursor-pointer"
-            variant="destructive"
-            disabled={patientSelected.length === 0}
-          >
-            <Trash />
-          </Button>
         </div>
         <div className="flex flex-col h-full w-full">
           <DataGrid
@@ -98,9 +88,6 @@ const Patient = () => {
             hideFooterPagination
             className="overflow-auto"
             filterMode="client"
-            onRowSelectionModelChange={(row) => {
-              setPatientSelected(row);
-            }}
             onRowClick={(e) => {
               patientCurrent.current = e.row as PatientParser;
               setShowModal(true);

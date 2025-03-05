@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useRequest } from "ahooks";
-import { Plus, Trash } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { useRef, useState } from "react";
 import DoctorController from "@infrastructure/controllers/DoctorController";
@@ -12,9 +12,6 @@ const Doctor = () => {
   const gridRef = useRef<any>(null);
   const doctorCurrent = useRef<DoctorParser | null>(null);
 
-  const [doctorSelected, setDoctorSelected] = useState<GridRowSelectionModel>(
-    []
-  );
   const [showModal, setShowModal] = useState(false);
 
   const {
@@ -70,13 +67,6 @@ const Doctor = () => {
           >
             <Plus />
           </Button>
-          <Button
-            className="w-10 cursor-pointer"
-            variant="destructive"
-            disabled={doctorSelected.length === 0}
-          >
-            <Trash />
-          </Button>
         </div>
         <div className="flex flex-col h-full w-full">
           <DataGrid
@@ -89,9 +79,6 @@ const Doctor = () => {
             hideFooterPagination
             className="overflow-auto"
             filterMode="client"
-            onRowSelectionModelChange={(row) => {
-              setDoctorSelected(row);
-            }}
             onRowClick={(e) => {
               doctorCurrent.current = e.row as DoctorParser;
               setShowModal(true);

@@ -7,6 +7,6 @@ const specialtyParser = z.object({
   hourly_rate: z.string().nullable(),
 });
 
-export type specialtyParser = z.infer<typeof specialtyParser>;
+export type SpecialtyParser = z.infer<typeof specialtyParser>;
 
 export default specialtyParser;

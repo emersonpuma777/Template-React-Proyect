@@ -1,30 +1,28 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 import DatePickerField from "@components/fields/DatePickerField";
-import EmailField from "@components/fields/EmailField";
 import InputField from "@components/fields/InputField";
-import PhoneField from "@components/fields/PhoneField";
 import SelectField from "@components/fields/SelectField";
 import { Form } from "@components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@components/ui/button";
 import { DialogFooter as ModalFooter } from "@components/ui/dialog";
-import { Plus, Save, Trash, X } from "lucide-react";
+import { DollarSign, Plus, Save, Trash, X } from "lucide-react";
 import { useRequest } from "ahooks";
 import { toast } from "sonner";
 import AppointmentController from "@infrastructure/controllers/AppointmentController";
 import ClipLoader from "react-spinners/ClipLoader";
 import { AppointmentParser } from "@infrastructure/models/appointement";
-import {
-  AppointmentSchemaCreate,
-  appointmentSchemaCreate,
-} from "@infrastructure/schema/appointmentSchemaCreate";
-import { appointmentSchemaUpdate } from "@infrastructure/schema/appointmentSchemaUpdate";
+import { appointmentSchemaCreate } from "@infrastructure/schema/appointmentSchemaCreate";
+
 import PatientController from "@infrastructure/controllers/PatientController";
 import DoctorController from "@infrastructure/controllers/DoctorController";
 import WorkingHours from "@infrastructure/controllers/WorkingHours";
 import { useEffect } from "react";
 import { format } from "date-fns";
+import { useSelector } from "react-redux";
+import { RootState } from "@application/store/store";
 
 interface AppointmentFormProps {
   current?: AppointmentParser | null;
@@ -37,37 +35,42 @@ const AppointmentForm = ({
   onClose,
   onRefresh,
 }: AppointmentFormProps) => {
+  const { user } = useSelector((state: RootState) => state.auth);
   const form = useForm({
-    resolver: zodResolver(
-      current ? appointmentSchemaUpdate : appointmentSchemaCreate
-    ),
+    resolver: zodResolver(appointmentSchemaCreate as any),
     mode: "onBlur",
     defaultValues: current
       ? {
           patientId: current?.patient_id ?? "",
           doctorId: current?.doctor_id ?? "",
-          appointmentDate: current?.appointment_date,
+          appointmentDate: format(
+            current?.appointment_date ?? new Date(),
+            "yyyy-MM-dd"
+          ),
           startTime: current?.start_time?.substring(
             0,
             current?.start_time?.length - 3
           ),
-          endTime: current?.end_time,
+          endTime: current?.start_time?.substring(
+            0,
+            current?.start_time?.length - 3
+          ),
         }
       : {
-          patientId: "",
+          patientId: user?.role === "patient" ? `${user?.id}` : "",
           doctorId: "",
-          appointmentDate: "",
+          appointmentDate: new Date(),
           startTime: "",
           endTime: "",
         },
   });
 
-  const { data: workingHours = [], run: runWorkingHours } = useRequest(
+  const { data: workingHours, run: runWorkingHours } = useRequest(
     async (params) => {
       const res = await WorkingHours.search(params);
-      return (res.data ?? []).map((item) => ({
-        label: item,
-        value: item,
+      return (res.data ?? [])?.map((item) => ({
+        label: item ?? "",
+        value: item ?? "",
       }));
     },
     {
@@ -75,19 +78,26 @@ const AppointmentForm = ({
     }
   );
 
-  const { data: patient } = useRequest(async () => {
-    const res = await PatientController.search();
-    return (res.data ?? []).map((item) => ({
-      label: `${item.name} ${item.lastname}`,
-      value: item.id,
-    }));
-  }, {});
+  const { data: patient, loading: loadingPatient } = useRequest(
+    async () => {
+      const res = await PatientController.search();
+      return (res.data ?? []).map((item) => ({
+        label: `${item.name ?? ""} ${item.lastname ?? ""}`,
+        value: item.id ?? "",
+      }));
+    },
+    {
+      ready: user?.role !== "patient",
+    }
+  );
 
-  const { data: doctor } = useRequest(async () => {
+  const { data: doctor, loading: loadingDoctor } = useRequest(async () => {
     const res = await DoctorController.search();
     return (res.data ?? []).map((item) => ({
-      label: `${item.specialty_name} - ${item.name} ${item.lastname}`,
-      value: item.id,
+      label: `${item.specialty_name ?? ""} - ${item.name ?? ""} ${
+        item.lastname ?? ""
+      }`,
+      value: item.id ?? "",
     }));
   }, {});
 
@@ -175,13 +185,14 @@ const AppointmentForm = ({
     }
   );
 
-  const onSubmit = (
-    data: AppointmentSchemaCreate | AppointmentSchemaCreate
-  ) => {
+  const onSubmit = (data: any) => {
     if (current) {
       runUpdateAppointment(data);
     } else {
-      runCreateAppointment(data);
+      runCreateAppointment({
+        ...data,
+        pacientId: user?.role === "patient" ? user?.id : data.patientId,
+      });
     }
   };
 
@@ -197,90 +208,139 @@ const AppointmentForm = ({
   }, [form.watch("appointmentDate"), form.watch("doctorId")]);
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="flex flex-col gap-3 pb-5">
-          <SelectField
-            control={form.control}
-            name="patientId"
-            label="Patient"
-            data={patient ?? []}
-            disabled={Boolean(current)}
-          />
-          <SelectField
-            control={form.control}
-            name="doctorId"
-            label="Doctor"
-            data={doctor ?? []}
-            disabled={Boolean(current)}
-          />
-          <DatePickerField
-            control={form.control}
-            name="appointmentDate"
-            label="Appointment Date"
-            disabled={Boolean(current)}
-          />
-          <div className="flex gap-3 grid grid-cols-2">
-            <InputField
-              control={form.control}
-              name="startTime"
-              label="Start time"
-              disabled={Boolean(current)}
-            />
-            <InputField
-              control={form.control}
-              name="endTime"
-              label="End time"
-              data={workingHours ?? []}
-              disabled={Boolean(current)}
-            />
-          </div>
+    <>
+      {loadingPatient || loadingDoctor ? (
+        <div className="flex items-center justify-center h-full w-full">
+          <ClipLoader color="#000" loading size={50} />
         </div>
-
-        <ModalFooter>
-          {!current && (
-            <Button
-              type="submit"
-              className="cursor-pointer"
-              disabled={loadingCreate || loadingUpdate || loadingRemove}
-            >
-              {loadingCreate || loadingUpdate || loadingRemove ? (
-                <ClipLoader size={15} color="#fff" />
-              ) : (
-                <>
-                  {current ? <Save /> : <Plus />}
-                  {current ? "Save Changes" : "Create Appointment"}
-                </>
+      ) : (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-3 pb-5">
+              {user?.role !== "patient" && (
+                <SelectField
+                  control={form.control}
+                  name="patientId"
+                  label="Patient"
+                  data={patient ?? []}
+                  disabled={Boolean(current)}
+                />
               )}
-            </Button>
-          )}
-          {current && (
-            <Button
-              type="button"
-              className="cursor-pointer"
-              variant="destructive"
-              onClick={() => runRemoveAppointment()}
-              disabled={loadingCreate || loadingUpdate || loadingRemove}
-            >
-              <Trash />
-              Cancel Appointment
-            </Button>
-          )}
-          <div className="grow" />
+              <SelectField
+                control={form.control}
+                name="doctorId"
+                label="Doctor"
+                data={doctor ?? []}
+                disabled={Boolean(current)}
+              />
+              {current ? (
+                <InputField
+                  control={form.control}
+                  name="appointmentDate"
+                  label="Appointment Date"
+                  disabled={Boolean(current)}
+                />
+              ) : (
+                <DatePickerField
+                  control={form.control}
+                  name="appointmentDate"
+                  label="Appointment Date"
+                  disabled={Boolean(current)}
+                />
+              )}
+              {current ? (
+                <div className="flex gap-3 grid grid-cols-2">
+                  <InputField
+                    control={form.control}
+                    name="startTime"
+                    label="Start time"
+                    disabled={Boolean(current)}
+                  />
+                  <InputField
+                    control={form.control}
+                    name="endTime"
+                    label="End time"
+                    disabled={Boolean(current)}
+                  />
+                </div>
+              ) : (
+                <div className="flex gap-3 grid grid-cols-2">
+                  <SelectField
+                    control={form.control}
+                    name="startTime"
+                    label="Start time"
+                    disabled={Boolean(current)}
+                    data={workingHours ?? []}
+                  />
+                  <SelectField
+                    control={form.control}
+                    name="endTime"
+                    label="End time"
+                    data={workingHours ?? []}
+                    disabled={Boolean(current)}
+                  />
+                </div>
+              )}
+            </div>
 
-          <Button
-            type="button"
-            className="cursor-pointer"
-            variant="secondary"
-            onClick={() => onClose(false)}
-            disabled={loadingCreate || loadingUpdate || loadingRemove}
-          >
-            <X />
-            Cancel
-          </Button>
-        </ModalFooter>
-      </form>
-    </Form>
+            <ModalFooter>
+              {!current && (
+                <Button
+                  type="submit"
+                  className="cursor-pointer"
+                  disabled={loadingCreate || loadingUpdate || loadingRemove}
+                >
+                  {loadingCreate || loadingUpdate || loadingRemove ? (
+                    <ClipLoader size={15} color="#fff" />
+                  ) : (
+                    <>
+                      {current ? <Save /> : <Plus />}
+                      {current ? "Save Changes" : "Create Appointment"}
+                    </>
+                  )}
+                </Button>
+              )}
+              {current && !current.is_paid && (
+                <Button
+                  type="button"
+                  className="cursor-pointer"
+                  variant="destructive"
+                  onClick={() => runRemoveAppointment()}
+                  disabled={loadingCreate || loadingUpdate || loadingRemove}
+                >
+                  <Trash />
+                  Cancel Appointment
+                </Button>
+              )}
+              {current && !current.is_paid && (
+                <Button
+                  type="button"
+                  className="cursor-pointer"
+                  variant="outline"
+                  onClick={() => runRemoveAppointment()}
+                  disabled={loadingCreate || loadingUpdate || loadingRemove}
+                >
+                  <DollarSign />
+                  Paid Appointment
+                </Button>
+              )}
+              <div className="grow" />
+
+              <Button
+                type="button"
+                className="cursor-pointer"
+                variant="secondary"
+                onClick={() => onClose(false)}
+                disabled={loadingCreate || loadingUpdate || loadingRemove}
+              >
+                <X />
+                Cancel
+              </Button>
+            </ModalFooter>
+          </form>
+        </Form>
+      )}
+    </>
   );
 };
 

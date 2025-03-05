@@ -1,4 +1,10 @@
-import { Calendar, Frame, PanelsTopLeft, PersonStanding } from "lucide-react";
+import {
+  Calendar,
+  Frame,
+  PanelsTopLeft,
+  PersonStanding,
+  Sofa,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -11,6 +17,8 @@ import { TeamSwitcher } from "./TeamSwitcher";
 import { NavUser } from "./NavUser";
 import { ComponentProps } from "react";
 import { NavMain } from "./NavMain";
+import { useSelector } from "react-redux";
+import { RootState } from "@application/store/store";
 
 const data = {
   navMain: [
@@ -38,17 +46,43 @@ const data = {
       icon: Frame,
       items: [],
     },
+    {
+      title: "Specialties",
+      url: "/specialty",
+      icon: Sofa,
+      items: [],
+    },
+  ],
+};
+
+const dataPatient = {
+  navMain: [
+    {
+      title: "Calendar",
+      url: "/calendar",
+      icon: Calendar,
+      items: [],
+    },
+    {
+      title: "Appointment",
+      url: "/appointment",
+      icon: Frame,
+      items: [],
+    },
   ],
 };
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
+  const { user } = useSelector((state: RootState) => state.auth);
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain
+          items={user?.role === "admin" ? data.navMain : dataPatient.navMain}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

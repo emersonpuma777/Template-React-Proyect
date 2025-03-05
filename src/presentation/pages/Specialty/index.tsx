@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useRequest } from "ahooks";
-import { Check, Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { useRef, useState } from "react";
-import AppointmentController from "@infrastructure/controllers/AppointmentController";
 import ModalAddEdit from "./components/ModalAddEdit";
-import { format } from "date-fns";
-import { AppointmentParser } from "@infrastructure/models/appointement";
+import { SpecialtyParser } from "@infrastructure/models/specialty";
+import SpecialtyController from "@infrastructure/controllers/SpecialtyController";
 
-const Appointment = () => {
+const Specialty = () => {
   const gridRef = useRef<any>(null);
-  const patientCurrent = useRef<AppointmentParser | null>(null);
+  const specialtyCurrent = useRef<SpecialtyParser | null>(null);
 
   const [showModal, setShowModal] = useState(false);
 
@@ -19,63 +18,27 @@ const Appointment = () => {
     data: appointment,
     loading,
     refresh,
-  } = useRequest(() => AppointmentController.search(), {});
+  } = useRequest(() => SpecialtyController.search(), {});
 
   const columns: GridColDef<any>[] = [
     {
-      field: "patient_fullname",
-      headerName: "Patient",
+      field: "name",
+      headerName: "Name",
       width: 250,
       cellClassName: "!text-center",
     },
     {
-      field: "doctor_fullname",
-      headerName: "Doctor",
+      field: "label",
+      headerName: "Label",
       width: 250,
       cellClassName: "!text-center",
     },
     {
-      field: "appointment_date",
-      headerName: "Fecha",
-      valueFormatter: (value) => format(new Date(value), "dd-MM-yyyy"),
-      width: 150,
-      cellClassName: "!text-center",
-    },
-    {
-      field: "start_time",
-      headerName: "Start time",
-      width: 150,
-      cellClassName: "!text-center",
-    },
-    {
-      field: "end_time",
-      headerName: "End time",
-      width: 150,
-      cellClassName: "!text-center",
-    },
-    {
-      field: "appointment_price",
-      headerName: "Appointment Price",
+      field: "hourly_rate",
+      headerName: "Hourly Rate",
       width: 150,
       valueFormatter: (value) => `S/. ${value}`,
       cellClassName: "!text-center",
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 150,
-      cellClassName: "!text-center",
-    },
-    {
-      field: "is_paid",
-      headerName: "Is paid",
-      renderCell: (data) => {
-        return (
-          <div className="flex justify-center items-center w-full h-full">
-            {data?.value ? <Check /> : <X />}
-          </div>
-        );
-      },
     },
   ];
 
@@ -102,7 +65,7 @@ const Appointment = () => {
             className="overflow-auto"
             filterMode="client"
             onRowClick={(e) => {
-              patientCurrent.current = e.row as AppointmentParser;
+              specialtyCurrent.current = e.row as SpecialtyParser;
               setShowModal(true);
             }}
           />
@@ -112,16 +75,16 @@ const Appointment = () => {
         <ModalAddEdit
           onClose={(e) => {
             setShowModal(e);
-            patientCurrent.current = null;
+            specialtyCurrent.current = null;
           }}
           onRefresh={() => {
             refresh();
           }}
-          current={patientCurrent.current}
+          current={specialtyCurrent.current}
         />
       )}
     </div>
   );
 };
 
-export default Appointment;
+export default Specialty;

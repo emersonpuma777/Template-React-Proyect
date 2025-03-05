@@ -12,7 +12,7 @@ export const signUpSchema = z.object({
     .nonempty("Last name is required"),
   identifier: z
     .string()
-    .length(8, { message: "Identifier must be exactly 10 characters long" })
+    .length(8, { message: "Identifier must be exactly 8 characters long" })
     .nonempty("Identifier is required"),
   email: z
     .string()

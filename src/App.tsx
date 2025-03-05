@@ -12,6 +12,8 @@ import Doctor from "@presentation/pages/Doctor";
 import Appointment from "@presentation/pages/Appointment";
 import Patient from "@presentation/pages/Patient";
 import { Toaster } from "@components/ui/sonner";
+import Account from "@presentation/pages/Account";
+import Specialty from "@presentation/pages/Specialty";
 
 function App() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -54,6 +56,8 @@ function App() {
             <Route path="/patients" element={<Patient />} />
             <Route path="/doctors" element={<Doctor />} />
             <Route path="/appointment" element={<Appointment />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/specialty" element={<Specialty />} />
           </Route>
           <Route
             path="*"
